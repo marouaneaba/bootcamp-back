@@ -1,11 +1,18 @@
 package bistrot;
 
+import com.intuit.karate.Results;
+import com.intuit.karate.Runner;
 import com.intuit.karate.junit5.Karate;
 
-public class FeatureRunner {
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
+class FeatureRunner {
 
     @Karate.Test
-    Karate testAll() {
-        return Karate.run().relativeTo(getClass());
+    void testParallel() {
+        Results results = Runner.path("classpath:bistrot/compositeitem")
+                .parallel(5);
+        assertEquals(0, results.getFailCount(), results.getErrorMessages());
     }
+
 }
