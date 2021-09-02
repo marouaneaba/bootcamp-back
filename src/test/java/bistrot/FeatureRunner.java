@@ -1,0 +1,11 @@
+package bistrot;
+
+import com.intuit.karate.junit5.Karate;
+
+public class FeatureRunner {
+
+    @Karate.Test
+    Karate testAll() {
+        return Karate.run().relativeTo(getClass());
+    }
+}
