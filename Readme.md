@@ -23,6 +23,7 @@ Master or main branch is used for current feature development, branches called *
 Once everything is set up you can run the project using your favorite IDE or directly with maven.
 To start your application , simply run:
 
+    rm -rf data
     ./mvnw clean install && java -jar target/decathlon-bootcamp-1.0-SNAPSHOT.jar 
 
 
@@ -41,7 +42,6 @@ To launch your application's tests, run:
 
     ./mvnw clean test
 
-#### TDD/BDD:
 
 
 ## Access endpoints to test
@@ -50,6 +50,131 @@ The application exposes the API documentation, testable **/swagger-ui/** of the 
 http://[host:port]/swagger-ui/ (ex en local : http://localhost:8080/swagger-ui/)
 
 ## APIs REST Endpoints
+##### Fetch all composition item:
+###### Request:
+````
+curl -X GET "http://localhost:8080/v1/composition-items" -H "accept: application/json"
+````
+
+###### Response:
+* 200 Successful operation
+
+```json
+[
+  {
+    "id": 1,
+    "name": "espresso",
+    "price": 2.4,
+    "recipe": "some thing",
+    "quantity": 3
+  },
+  {
+    "id": 2,
+    "name": "AMERICANO",
+    "price": 5,
+    "recipe": "",
+    "quantity": 0
+  },
+  {
+    "id": 3,
+    "name": "mocha",
+    "price": 7,
+    "recipe": "",
+    "quantity": 2
+  }
+]
+```
+
+##### Fetch composition item by name:
+###### Request:
+````
+curl -X GET "http://localhost:8080/v1/composition-items?name=espresso" -H "accept: application/json"
+````
+###### Response:
+* 200 Successful operation
+
+```json
+[
+  {
+    "id": 1,
+    "name": "espresso",
+    "price": 2.4,
+    "recipe": "some thing",
+    "quantity": 3
+  }
+]
+```
+
+##### Returns the composition item by id:
+###### Request:
+````
+curl -X GET "http://localhost:8080/v1/composition-items/1" -H "accept: application/json"
+````
+###### Response:
+
+* 200 Successful operation
+
+```json
+{
+  "id": 1,
+  "name": "espresso",
+  "price": 2.4,
+  "recipe": "some thing",
+  "quantity": 3
+}
+```
+
+* 404 Not found
+
+
+##### Create composition item:
+###### Request:
+````
+curl -X POST "http://localhost:8080/v1/composition-items" -H "accept: application/json" -H "Content-Type: application/json" -d "{\"name\":\"espresso\",\"price\":2.4,\"recipe\":\"some thing\",\"quantity\":3}"
+````
+###### Response:
+* 201 Successful operation
+
+```json
+{
+  "id": 100,
+  "name": "espresso",
+  "price": 2.4,
+  "recipe": "some thing",
+  "quantity": 3
+}
+```
+
+* 400 Bad Request
+  Composition item name is blank
+
+##### Update the composition item by id:
+###### Request:
+````
+{"name": "espresso", "price": 2.4, "recipe": "some thing", "quantity": 3}
+````
+###### Response:
+* 204 No content
+* 404 Malformed request the composition item not found
+
+##### Delete the composition item by id:
+###### Request:
+````
+curl -X DELETE "http://localhost:8080/v1/composition-items/1" -H "accept: */*"
+````
+###### Response:
+* 204 No content
+* 404 Not found
+
+
+##### Delete all the composition item:
+###### Request:
+````
+curl -X DELETE "http://localhost:8080/v1/composition-items" -H "accept: */*"
+````
+###### Response:
+* 204	No content
+
 
 
 

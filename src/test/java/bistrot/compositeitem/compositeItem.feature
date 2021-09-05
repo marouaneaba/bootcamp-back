@@ -79,4 +79,4 @@ Feature: Create, read, update and delete composition item
     Given path 'composition-items'
     And header Accept = 'application/json'
     When method DELETE
-    Then status 200
+    Then status 204

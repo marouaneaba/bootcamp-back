@@ -27,7 +27,7 @@ public interface CompositionItemApi {
     @ApiResponses(
             value = {
                     @ApiResponse(code = 201, message = "Successful operation", response = CompositionItemDto.class),
-                    @ApiResponse(code = 400, message = "Malformed request the composition item name is blank"),
+                    @ApiResponse(code = 400, message = "Malformed request the composition item name is blank")
             })
     @PostMapping(
             consumes = MediaType.APPLICATION_JSON_VALUE,
@@ -37,8 +37,8 @@ public interface CompositionItemApi {
 
 
     @ApiOperation(
-            value = "Returns composition items or composition item by filter",
-            notes = "Returns composition items or composition item by filter",
+            value = "Fetch composition items or composition item by name",
+            notes = "Fetch composition items or composition item by name",
             response = CompositionItemDto.class,
             tags = {
                     "composition item",
@@ -52,8 +52,8 @@ public interface CompositionItemApi {
 
 
     @ApiOperation(
-            value = "Returns the composition item by id",
-            notes = "Returns the composition item by id",
+            value = "Fetch the composition item by id",
+            notes = "Fetch the composition item by id",
             response = CompositionItemDto.class,
             tags = {
                     "composition item",
@@ -61,10 +61,10 @@ public interface CompositionItemApi {
     @ApiResponses(
             value = {
                     @ApiResponse(code = 200, message = "Successful operation", response = CompositionItemDto.class),
-                    @ApiResponse(code = 404, message = "Malformed request the composition item id not found"),
+                    @ApiResponse(code = 404, message = "Not found"),
             })
     @GetMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<CompositionItemDto> get(@ApiParam(value = "Fetch composition item by id", required = true) @PathVariable("id") String id) throws CompositionItemNotFoundException;
+    ResponseEntity<CompositionItemDto> get(@ApiParam(value = "Fetch composition item by id", required = true) @PathVariable("id") String id) throws CompositionItemNotFoundException;
 
 
     @ApiOperation(
@@ -76,8 +76,8 @@ public interface CompositionItemApi {
             })
     @ApiResponses(
             value = {
-                    @ApiResponse(code = 200, message = "Successful operation", response = CompositionItemDto.class),
-                    @ApiResponse(code = 404, message = "Malformed request the composition item not found"),
+                    @ApiResponse(code = 204, message = "No content", response = CompositionItemDto.class),
+                    @ApiResponse(code = 404, message = "Not found"),
             })
     @PutMapping(
             value = "{id}",
@@ -86,15 +86,15 @@ public interface CompositionItemApi {
     void update(@ApiParam(value = "Composition item id to update", required = true) @PathVariable String id, @ApiParam(value = "Composition item", required = true) @RequestBody CompositionItemDto compositionItemDto) throws CompositionItemNotFoundException;
 
     @ApiOperation(
-            value = "delete the composition item by id",
-            notes = "delete the composition item by id",
+            value = "Delete the composition item by id",
+            notes = "Delete the composition item by id",
             response = CompositionItemDto.class,
             tags = {
                     "composition item",
             })
     @ApiResponses(
             value = {
-                    @ApiResponse(code = 200, message = "Successful operation", response = CompositionItemDto.class),
+                    @ApiResponse(code = 204, message = "No content", response = CompositionItemDto.class),
                     @ApiResponse(code = 404, message = "Malformed request the composition item not found"),
             })
     @DeleteMapping(value = "{id}")
@@ -110,7 +110,7 @@ public interface CompositionItemApi {
             })
     @ApiResponses(
             value = {
-                    @ApiResponse(code = 200, message = "Successful operation", response = CompositionItemDto.class)
+                    @ApiResponse(code = 204, message = "No content", response = CompositionItemDto.class)
             })
     @DeleteMapping
     @ResponseStatus(HttpStatus.OK)

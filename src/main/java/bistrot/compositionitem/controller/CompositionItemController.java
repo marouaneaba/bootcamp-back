@@ -58,7 +58,7 @@ public class CompositionItemController implements CompositionItemApi {
   }
 
   @DeleteMapping
-  @ResponseStatus(HttpStatus.OK)
+  @ResponseStatus(HttpStatus.NO_CONTENT)
   public void deleteAll() {
     this.compositionItemService.deleteAll();
   }
