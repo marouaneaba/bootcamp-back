@@ -2,7 +2,22 @@
 
 This CRUD REST API used to expose and manages resources **Lille bistrot**.
 
-The bistrot can be a bar, restaurant or café, ...
+**Context:**
+
+We have a menu exposure API that we would like to improve to make it an API that aggregates menus from a bistrot.
+
+Basic restaurant process:
+
+- An owner will create a menu / card from a set of composition, each composition represents a set of the dish or drink.
+
+- A customer can collect all the menu / cards of a bistrot.
+
+- An owner will be able to create, modify and delete a menu, composition and the content of a composition.
+
+
+**Entity UML:**
+[Miro](https://miro.com/app/board/o9J_lzLHiLc=/)
+
 
 ## Prerequisites
 * JDK 16
