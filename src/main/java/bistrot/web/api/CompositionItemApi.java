@@ -1,8 +1,7 @@
-package bistrot.compositionitem.controller;
+package bistrot.web.api;
 
 import bistrot.compositionitem.dto.CompositionItemDto;
-import bistrot.compositionitem.exception.CompositionItemNameIsBlankException;
-import bistrot.compositionitem.exception.CompositionItemNotFoundException;
+import bistrot.common.exception.CompositionItemNotFoundException;
 import io.swagger.annotations.*;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -13,7 +12,6 @@ import java.util.List;
 
 @Api(
         value = "Composition item",
-        description = "The composition item API",
         tags = {"composition item"})
 public interface CompositionItemApi {
 
@@ -32,9 +30,7 @@ public interface CompositionItemApi {
     @PostMapping(
             consumes = MediaType.APPLICATION_JSON_VALUE,
             produces = MediaType.APPLICATION_JSON_VALUE)
-    ResponseEntity<CompositionItemDto> create(@ApiParam(value = "Composition item contains information on the product to create" ,required=true )@RequestBody CompositionItemDto compositionItem)
-            throws CompositionItemNameIsBlankException;
-
+    ResponseEntity<CompositionItemDto> create(@ApiParam(value = "Composition item contains information on the product to create" ,required=true )@RequestBody CompositionItemDto compositionItem);
 
     @ApiOperation(
             value = "Fetch composition items or composition item by name",
@@ -48,7 +44,7 @@ public interface CompositionItemApi {
                     @ApiResponse(code = 200, message = "Successful operation", response = CompositionItemDto.class)
             })
     @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
-    ResponseEntity<List<CompositionItemDto>> get(@ApiParam("Filter composition item") CompositionItemDto filter);
+    ResponseEntity<List<CompositionItemDto>> get(@ApiParam("Composition item name") String compositionItemName);
 
 
     @ApiOperation(
@@ -64,7 +60,7 @@ public interface CompositionItemApi {
                     @ApiResponse(code = 404, message = "Not found"),
             })
     @GetMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
-    ResponseEntity<CompositionItemDto> get(@ApiParam(value = "Fetch composition item by id", required = true) @PathVariable("id") String id) throws CompositionItemNotFoundException;
+    ResponseEntity<CompositionItemDto> get(@ApiParam(value = "Fetch composition item by id", required = true) @PathVariable Long id) throws CompositionItemNotFoundException;
 
 
     @ApiOperation(
@@ -83,7 +79,7 @@ public interface CompositionItemApi {
             value = "{id}",
             consumes = MediaType.APPLICATION_JSON_VALUE)
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    void update(@ApiParam(value = "Composition item id to update", required = true) @PathVariable String id, @ApiParam(value = "Composition item", required = true) @RequestBody CompositionItemDto compositionItemDto) throws CompositionItemNotFoundException;
+    void update(@ApiParam(value = "Composition item id to update", required = true) @PathVariable Long id, @ApiParam(value = "Composition item", required = true) @RequestBody CompositionItemDto compositionItemDto) throws CompositionItemNotFoundException;
 
     @ApiOperation(
             value = "Delete the composition item by id",
@@ -99,7 +95,7 @@ public interface CompositionItemApi {
             })
     @DeleteMapping(value = "{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    void delete(@ApiParam(value = "Composition item id to delete", required = true) @PathVariable String id) throws CompositionItemNotFoundException;
+    void delete(@ApiParam(value = "Composition item id to delete", required = true) @PathVariable Long id) throws CompositionItemNotFoundException;
 
     @ApiOperation(
             value = "Delete all the composition item",

@@ -2,7 +2,7 @@ Feature: Create, read, update and delete composition item
 
   Background:
     Given url apiBaseUrl
-    Given path '/v1/'
+    Given path '/v2/'
 
   Scenario: Create composition item
     Given path 'composition-items'
