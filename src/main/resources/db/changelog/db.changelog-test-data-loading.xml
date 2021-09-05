@@ -6,12 +6,8 @@
 
     <property name="coffee_file" value="./db/csv-data/coffee.csv"/>
 
-    <changeSet id="Lot 1 : 2-init coffee table for dev" author="marouaneabk" dbms="h2">
-        <loadData tableName="coffee" file="db/csv-data/coffee.csv" encoding="UTF-8"/>
-    </changeSet>
-
-    <changeSet id="Lot 1 : 2-init lunch table for dev" author="marouaneabk" dbms="h2">
-        <loadData tableName="lunch" file="db/csv-data/lunch.csv" encoding="UTF-8"/>
+    <changeSet id="Lot 1 : 2-init composition-item table for dev " author="marouaneabk" dbms="h2">
+        <loadData tableName="composition_item" file="db/csv-data/composition_item.csv" encoding="UTF-8"/>
     </changeSet>
 
 </databaseChangeLog>
