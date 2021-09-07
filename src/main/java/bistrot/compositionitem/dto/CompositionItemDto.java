@@ -9,6 +9,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import javax.validation.constraints.NotBlank;
 import java.io.Serializable;
 
 @Data
@@ -22,6 +23,8 @@ public class CompositionItemDto implements Serializable {
     @JsonProperty("id")
     private Long id;
 
+
+    @NotBlank(message = "The name is blank")
     @JsonProperty("name")
     private String name;
 

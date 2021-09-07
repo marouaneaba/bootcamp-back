@@ -1,4 +1,4 @@
-package bistrot.compositionitem.exception;
+package bistrot.common.exception;
 
 public class CompositionItemNotFoundException extends Exception{
 
