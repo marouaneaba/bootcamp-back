@@ -6,10 +6,13 @@ function init() {
   }
   var config = {
     env: env,
-    apiBaseUrl: 'http://localhost:8080'
+    apiBaseUrl: 'http://localhost:8080',
+    tokenUrl: 'http://localhost:8082/token'
   };
+
   if (env == 'dev') {
-        config.apiBaseUrl= 'http://localhost:8080'
+        config.apiBaseUrl = 'http://localhost:8080',
+        config.tokenUrl = 'http://localhost:8082/token'
   } else if (env == 'qa') {
     //...
   }

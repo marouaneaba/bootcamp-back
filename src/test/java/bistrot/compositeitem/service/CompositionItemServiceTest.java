@@ -77,7 +77,6 @@ class CompositionItemServiceTest {
   @Test
   void shouldReturnAllCompositionsWhenCompositionNameIsBlank() {
     // Given
-    // todo centralise duplication when
     Mockito.when(this.compositionItemRepository.findAll())
         .thenReturn(CompositionItemFixture.createCompositionItems());
 
