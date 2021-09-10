@@ -5,16 +5,14 @@ import bistrot.compositionitem.dto.CompositionItemDto;
 import io.swagger.annotations.*;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
-import java.util.List;
 
 @Api(
-    value = "Composition item",
-    tags = {"composition item"})
+    value = "Composition item reactor",
+    tags = {"composition item reactor"})
 public interface CompositionItemReactiveApi {
 
   @ApiOperation(
@@ -22,7 +20,7 @@ public interface CompositionItemReactiveApi {
       notes = "Create composition item",
       response = CompositionItemDto.class,
       tags = {
-        "composition item",
+        "composition item reactor",
       })
   @ApiResponses(
       value = {
@@ -48,7 +46,7 @@ public interface CompositionItemReactiveApi {
       notes = "Fetch composition items or composition item by name",
       response = CompositionItemDto.class,
       tags = {
-        "composition item",
+        "composition item reactor",
       })
   @ApiResponses(
       value = {
@@ -66,7 +64,7 @@ public interface CompositionItemReactiveApi {
       notes = "Fetch the composition item by id",
       response = CompositionItemDto.class,
       tags = {
-        "composition item",
+        "composition item reactor",
       })
   @ApiResponses(
       value = {
@@ -86,7 +84,7 @@ public interface CompositionItemReactiveApi {
       notes = "Update the composition item by id",
       response = CompositionItemDto.class,
       tags = {
-        "composition item",
+        "composition item reactor",
       })
   @ApiResponses(
       value = {
@@ -106,7 +104,7 @@ public interface CompositionItemReactiveApi {
       notes = "Delete the composition item by id",
       response = CompositionItemDto.class,
       tags = {
-        "composition item",
+        "composition item reactor",
       })
   @ApiResponses(
       value = {
@@ -124,7 +122,7 @@ public interface CompositionItemReactiveApi {
       notes = "Delete all the composition item",
       response = CompositionItemDto.class,
       tags = {
-        "composition item",
+        "composition item reactor",
       })
   @ApiResponses(
       value = {

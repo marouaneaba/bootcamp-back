@@ -8,6 +8,7 @@ import io.swagger.annotations.ApiParam;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -26,6 +27,7 @@ public class CompositionItemReactiveController implements CompositionItemReactiv
 
   @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
   @ResponseStatus(HttpStatus.OK)
+  @PreAuthorize("hasAuthority('ADMIN')")
   public Flux<CompositionItemDto> get(
       @ApiParam("Composition item name") @RequestParam(required = false) String compositionName) {
     return this.compositionItemReactorService.search(compositionName);
@@ -33,6 +35,7 @@ public class CompositionItemReactiveController implements CompositionItemReactiv
 
   @GetMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
   @ResponseStatus(HttpStatus.OK)
+  @PreAuthorize("hasAuthority('PROFILE')")
   public Mono<CompositionItemDto> get(
       @ApiParam(value = "Fetch composition item by id", required = true) @PathVariable Long id) {
     return this.compositionItemReactorService.search(id);
@@ -42,6 +45,7 @@ public class CompositionItemReactiveController implements CompositionItemReactiv
       consumes = MediaType.APPLICATION_JSON_VALUE,
       produces = MediaType.APPLICATION_JSON_VALUE)
   @ResponseStatus(HttpStatus.CREATED)
+  @PreAuthorize("hasAuthority('PROFILE')")
   public Mono<CompositionItemDto> create(
       @ApiParam(
               value = "Composition item contains information on the product to consume",
@@ -54,6 +58,7 @@ public class CompositionItemReactiveController implements CompositionItemReactiv
 
   @PutMapping(value = "/{id}", consumes = MediaType.APPLICATION_JSON_VALUE)
   @ResponseStatus(HttpStatus.NO_CONTENT)
+  @PreAuthorize("hasAuthority('ADMIN')")
   public Mono<Void> update(
       @ApiParam(value = "Composition item id to update", required = true) @PathVariable Long id,
       @ApiParam(value = "Composition item", required = true) @RequestBody @Valid
@@ -63,12 +68,14 @@ public class CompositionItemReactiveController implements CompositionItemReactiv
 
   @DeleteMapping(value = "/{id}")
   @ResponseStatus(HttpStatus.NO_CONTENT)
+  @PreAuthorize("hasAuthority('ADMIN')")
   public Mono<Void> delete(@ApiParam(value = "Composition item id to delete", required = true)  @PathVariable Long id) {
     return this.compositionItemReactorService.delete(id);
   }
 
   @DeleteMapping
   @ResponseStatus(HttpStatus.NO_CONTENT)
+  @PreAuthorize("hasAuthority('ADMIN')")
   public Mono<Void> deleteAll() {
     return this.compositionItemReactorService.deleteAll();
   }
