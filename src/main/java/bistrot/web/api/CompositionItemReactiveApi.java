@@ -1,4 +1,4 @@
-package bistrot.web.api.exceptionhandler;
+package bistrot.web.api;
 
 import bistrot.common.exception.CompositionItemNotFoundException;
 import bistrot.compositionitem.dto.CompositionItemDto;
