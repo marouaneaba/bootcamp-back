@@ -3,7 +3,6 @@ package bistrot.web.api;
 import bistrot.common.EndPointBistrot;
 import bistrot.compositionitem.dto.CompositionItemDto;
 import bistrot.compositionitem.service.CompositionItemReactorService;
-import bistrot.web.api.exceptionhandler.CompositionItemReactiveApi;
 import io.swagger.annotations.ApiParam;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;

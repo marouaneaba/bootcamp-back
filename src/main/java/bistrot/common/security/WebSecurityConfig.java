@@ -30,9 +30,9 @@ public class WebSecurityConfig {
             "/swagger-resources",
             "/swagger-ui",
             "/swagger-ui/**",
-            "/v3/api-docs"
+            "/v2/api-docs"
     };
-    
+
     @Bean
     public SecurityWebFilterChain securityWebFilterChain(ServerHttpSecurity http) {
         return http
