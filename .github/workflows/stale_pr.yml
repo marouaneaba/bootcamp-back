@@ -1,0 +1,18 @@
+name: 'Close stale issues and PR'
+on:
+  schedule:
+    #every day at 8 AM
+    - cron: '0 8 * * *'
+
+jobs:
+  stale:
+    runs-on: Linux
+    steps:
+      - uses: actions/stale@v3
+        with:
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
+          stale-pr-message: 'This PR is stale because it has been open 20 days with no activity. Ephemeral environment has been cleaned.'
+          days-before-pr-stale: 20
+          days-before-pr-close: 0
+          days-before-issue-stale: -1 #don't touch issue
+          days-before-issue-close: -1 #don't touch issue

@@ -1,0 +1,144 @@
+name: Main
+
+on:
+  push: 
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: Linux #linux internal
+
+    #avoid loop when bumping version :)
+    if: "contains(github.event.head_commit.message, 'CI: Change version to') != true"
+
+    steps:
+      - name: clean
+        uses: docker://centos
+        if: ${{ always() }}
+        continue-on-error: true
+        with:
+          args: "/bin/rm /github/workspace -rf"
+
+      # Disable parallel workflow
+      - name: Turnstyle
+        uses: softprops/turnstyle@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - uses: actions/checkout@v2
+        #with:
+        #  token: ${{ secrets.GHA_PERSONNAL_ADMIN_TOKEN }} # # If main is protected, you need to use an admin personnal token
+
+      - name: Checkout GitHub Action Repo
+        uses: actions/checkout@v2
+        with:
+          repository: dktunited/member-actions
+          ref: v1
+          token: ${{ secrets.DKTUNITED_TOKEN }}
+          path: .github/member-actions
+
+      - name: Setup variables
+        uses: ./.github/member-actions/github-action-member-setup-env
+
+      - name: Set up JDK 14
+        uses: actions/setup-java@v1
+        with:
+          java-version: 14
+          settings-path: ${{ github.workspace }}
+
+      - name: Cache local Maven repository
+        uses: actions/cache@v2
+        with:
+          path: ~/.m2/repository
+          key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
+          restore-keys: |
+            ${{ runner.os }}-maven-
+
+      - name: Bump version and set image name
+        run: |
+          mvn -q build-helper:parse-version versions:set \
+            -DnewVersion=\${parsedVersion.majorVersion}.\${parsedVersion.minorVersion}.\${parsedVersion.nextIncrementalVersion}\${parsedVersion.qualifier\?} \
+            versions:commit
+          version=$(mvn -q -Dexec.executable="echo" -Dexec.args='${project.version}' --non-recursive exec:exec)
+          echo "VERSION=$version">> $GITHUB_ENV
+
+      - name: Generate changelog
+        uses: charmixer/auto-changelog-action@v1
+        with:
+          release_branch: main
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Push bump
+        uses: stefanzweifel/git-auto-commit-action@v4
+        with:
+          commit_message: "CI: Change version to ${{ env.VERSION }}"
+          push_options: '--force'
+          branch: main
+
+      - name: Build with Maven
+        run: mvn clean verify
+
+      - name: Quality tests
+        run: |
+          mvn -q sonar:sonar -Dsonar.projectKey=dktunited_${{ env.ghrepo }} \
+          -Dsonar.organization=dktunited \
+          -Dsonar.host.url=https://sonarcloud.io \
+          -Dsonar.login=${{secrets.SONAR_TOKEN}} \
+          -Dsonar.branch.name=main
+
+      - name: OSA action
+        uses: checkmarx-ts/checkmarx-github-action@master
+        with:
+          cxAction: AsyncOsaScan
+          cxServer: https://checkmarx.dktapp.cloud
+          cxUsername: automation
+          cxPassword: ${{ secrets.CX_SCAN_PASS }}
+          cxTeam: /CxServer/SP/Company/Users
+          cxExecutePackageDependency: true
+          cxGithubIssues: true
+          cxGithubToken: ${{ secrets.GITHUB_TOKEN }}
+          cxGithubLabels: bug
+          cxProject: checkmarx-test
+          cxIncremental: true
+          cxVersion: "2021.1.1"
+
+      - name: Checkmarx CxFlow Action
+        uses: checkmarx-ts/checkmarx-cxflow-github-action@v1.1
+        with:
+          project: checkmarx-test
+          team: '/CxServer/SP/Company/Users'
+          checkmarx_url: https://checkmarx.dktapp.cloud
+          checkmarx_username: automation
+          checkmarx_password: ${{ secrets.CX_SCAN_PASS }}
+          checkmarx_client_secret: "014DF517-39D1-4453-B7B3-9930C563627C"
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          scanners: sast
+          bug_tracker: GitHub
+          params: --namespace=${{ github.repository_owner }} --repo-name=${{ github.event.repository.name }} --branch=main
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v1
+
+      - name: Login to Container Registry Europe
+        uses: docker/login-action@v1 
+        with:
+          registry: ${{ secrets.MEMBER_DOCKER_REGISTRY_EUROPE }}
+          username: ${{ secrets.MEMBER_DOCKER_REGISTRY_USERNAME }}
+          password: ${{ secrets.MEMBER_DOCKER_REGISTRY_PASSWORD }}
+
+      - name: Build and push
+        uses: docker/build-push-action@v2
+        with:
+          context: .
+          platforms: linux/amd64
+          push: true
+          tags: |
+            ${{ secrets.MEMBER_DOCKER_REGISTRY_EUROPE }}/member-worldwide-utes/member-worldwide-eu/${{ env.ghrepo }}:SNAPSHOT-${{env.VERSION}}
+
+      - name: clean
+        uses: docker://centos
+        if: ${{ always() }}
+        continue-on-error: true
+        with:
+          args: "/bin/rm /github/workspace -rf"
