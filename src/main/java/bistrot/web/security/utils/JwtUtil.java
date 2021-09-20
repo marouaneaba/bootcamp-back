@@ -1,4 +1,4 @@
-package bistrot.common.security.utils;
+package bistrot.web.security.utils;
 
 
 import com.nimbusds.jose.JOSEException;

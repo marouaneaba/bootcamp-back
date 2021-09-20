@@ -57,6 +57,37 @@ To launch your application's tests, run:
 
     ./mvnw clean test
 
+## kafka
+
+1. Launch Zookeper.
+2. Launch kafka.
+3. Create topic or use default topic "hello-kafka".
+
+Start zookeeper:
+````
+apache-zookeeper-3.7.0-bin/bin/zkServer.sh start
+````
+
+Start Kafka:
+```
+bin/kafka-server-start.sh config/server.properties
+```
+
+Create topic:
+```
+bin/kafka-topics.sh --create -bin/kafka-topics.sh --create --zookeeper localhost:2181 --replication-factor 1 --partitions 1 --topic bootcamp-topic
+```
+
+Start producer:
+```
+bin/kafka-console-producer.sh --broker-list localhost:9092 --topic bootcamp-topic
+```
+
+Start consumer:
+```
+bin/kafka-console-consumer.sh --zookeeper localhost:2181 --from-beginning --topic bootcamp-topic 
+```
+
 # Login mock
 This app can be used to run as a sidecar during Integartion Tests to mock a Security Provider (like login).
 
@@ -394,6 +425,18 @@ curl -X DELETE "http://localhost:8080/v1/composition-items" -H "accept: */*"
 * 403 Forbidden
 
 
+##### Publish stream in topic kafka:
+End point: 
+```
+http://localhost:8081/publish/{topic-name}
+```
+###### Request:
+**Scope**: *
+````
+curl -X POST "http://localhost:8081/publish/Hello-Kafka" -H "accept: */*" -H "Content-Type: application/json" -d "{\"id\":3,\"name\":\"coffee\",\"price\":1.8,\"recipe\":4.0,\"quantity\":8}"
+````
+###### Response:
+* 200 OK
 
 
 

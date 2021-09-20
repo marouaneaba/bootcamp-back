@@ -1,6 +1,6 @@
-package bistrot.common.security;
+package bistrot.web.security;
 
-import bistrot.common.security.utils.JwtUtil;
+import bistrot.web.security.utils.JwtUtil;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -30,7 +30,8 @@ public class WebSecurityConfig {
             "/swagger-resources",
             "/swagger-ui",
             "/swagger-ui/**",
-            "/v2/api-docs"
+            "/v2/api-docs",
+            "/publish/**"
     };
 
     @Bean

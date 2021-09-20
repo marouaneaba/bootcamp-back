@@ -1,4 +1,4 @@
-package bistrot.common.security;
+package bistrot.web.security;
 
 import org.springframework.security.authentication.ReactiveAuthenticationManager;
 import org.springframework.security.core.Authentication;

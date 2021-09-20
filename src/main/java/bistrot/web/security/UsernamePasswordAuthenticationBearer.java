@@ -1,4 +1,4 @@
-package bistrot.common.security;
+package bistrot.web.security;
 
 import com.nimbusds.jwt.SignedJWT;
 

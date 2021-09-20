@@ -1,6 +1,6 @@
-package bistrot.common.security;
+package bistrot.web.security;
 
-import bistrot.common.security.utils.JwtUtil;
+import bistrot.web.security.utils.JwtUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpHeaders;
 import org.springframework.security.core.Authentication;
