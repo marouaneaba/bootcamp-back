@@ -25,12 +25,14 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 
 @ExtendWith(MockitoExtension.class)
-@Import(CompositionItemRepository.class)
+//@Import(CompositionItemRepository.class)
 class CompositionItemServiceReactorTest {
 
-  @InjectMocks private CompositionItemReactorService compositionItemReactorService;
+  @InjectMocks
+  private CompositionItemReactorService compositionItemReactorService;
 
-  @Mock private CompositionItemRepository compositionItemRepository;
+  @Mock
+  private CompositionItemRepository compositionItemRepository;
 
   @Test
   void shouldReturnCompositionItemWhenSearchCompositionItemByIdAndThisCompositionItemInDataBase() throws CompositionItemNotFoundException {
