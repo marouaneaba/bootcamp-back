@@ -46,7 +46,6 @@ jobs:
             const output = `
             #### Deployment
             Your PR environment will be available in few seconds at: ${{ steps.html_preview.outputs.url }}
-            Your PR environment will be available in few seconds at: ${{ html_preview.html_preview.outputs.url }}
             \n
             Have fun
             `;
