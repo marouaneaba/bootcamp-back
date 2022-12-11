@@ -43,6 +43,12 @@ jobs:
           name: Test Reports
           path: '**/karate-reports/'
 
+      - name: HTML Preview
+        id: html_preview
+        uses: pavi2410/html-preview-action@v2
+        with:
+          html_file: 'karate-summary.html'
+
       - name: Cucumber Report to Annotations
         uses: deblockt/cucumber-report-annotations-action@v1.7
         with:
