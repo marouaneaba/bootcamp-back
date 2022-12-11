@@ -1,0 +1,50 @@
+name: Feature
+on:
+  pull_request:
+    types: [ opened, synchronize, reopened ]
+jobs:
+  nrt:
+    runs-on: Linux #linux internal
+    steps:
+      - name: clean
+        uses: docker://centos
+        if: ${{ always() }}
+        continue-on-error: true
+        with:
+          args: "/bin/rm /github/workspace -rf"
+
+      - uses: actions/checkout@v2
+
+      - name: Set up JDK 14
+        uses: actions/setup-java@v1
+        with:
+          java-version: 14
+          settings-path: ${{ github.workspace }}
+
+      - name: Checkout GitHub Action Repo
+        uses: actions/checkout@v2
+        with:
+          repository: dktunited/member-actions
+          ref: v1
+          token: ${{ secrets.DKTUNITED_TOKEN }}
+          path: .github/member-actions
+
+      - name: Setup variables
+        uses: ./.github/member-actions/github-action-member-setup-env
+
+      - name: Integration tests
+        run: |
+          mvn clean test --f ./pom.xml -Pephemeral
+
+      - name: Karate DSL Test Reports
+        uses: actions/upload-artifact@v2
+        if: ${{ always() }}
+        with:
+          name: Test Reports
+          path: '**/karate-reports/'
+
+      - name: Cucumber Report to Annotations
+        uses: deblockt/cucumber-report-annotations-action@v1.7
+        with:
+          access-token: ${{ secrets.GITHUB_TOKEN }}
+          path: "**/features.geo.geo.json"
