@@ -4,7 +4,7 @@ on:
     types: [ opened, synchronize, reopened ]
 jobs:
   nrt:
-    runs-on: Linux #linux internal
+    runs-on: ubuntu-latest #linux internal
     steps:
       - name: clean
         uses: docker://centos
@@ -29,12 +29,10 @@ jobs:
           token: ${{ secrets.DKTUNITED_TOKEN }}
           path: .github/member-actions
 
-      - name: Setup variables
-        uses: ./.github/member-actions/github-action-member-setup-env
 
       - name: Integration tests
         run: |
-          mvn clean test --f ./pom.xml -Pephemeral
+          mvn clean test --f ./pom.xml
 
       - name: Karate DSL Test Reports
         uses: actions/upload-artifact@v2
