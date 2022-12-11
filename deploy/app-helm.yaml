@@ -1,0 +1,114 @@
+apiVersion: helm.toolkit.fluxcd.io/v2beta1
+kind: HelmRelease
+metadata:
+  name: decathlon-bootcamp-dev
+  annotations:
+    ad.datadoghq.com/flux.logs: '[{"service":"sport-practice-api-member"}]'
+    ad.datadoghq.com/auditcontainer.logs: '[{}]'
+    ad.datadoghq.com/auditcontainer.check_names: '["openmetrics"]'
+    ad.datadoghq.com/auditcontainer.init_configs: '[{}]'
+    ad.datadoghq.com/auditcontainer.instances: |-
+      [
+        {
+          "prometheus_url": "http://%%host%%:8888/metrics",
+          "namespace": "opa",
+          "metrics": ["gatekeeper_sync_last_run_time", "gatekeeper_violations"]
+        }
+      ]
+    tags.datadoghq.com/env: "preproduction:europe"
+    tags.datadoghq.com/service: "sport-practice-api-member"
+    tags.datadoghq.com/version: "sport-practice-api-member"
+spec:
+  releaseName: decathlon-bootcamp-dev
+  chart: {spec: {chart: stateless-app, sourceRef: {kind: GitRepository, name: member-helm-repo-master, namespace: flux-system}}}
+  values:
+    appName: decathlon-bootcamp
+    team: member-bootcamp
+    replicaCount: 1
+    maxReplicas: 1
+    datadog:
+      apm:
+        ## @param enabled - boolean - optional - default: false
+        ## Enable this to enable APM and tracing, on port 8126
+        #
+        enabled: true
+      logs:
+        enabled: true
+        containerCollectAll: true
+        containerCollectUsingFiles: true
+      tags:
+        env: "development:europe"
+        service: decathlon-bootcamp
+        sma_1st_level_group: CE-CRM-TECH-DECATHLON
+        sma_2nd_level_group: CS-MEMBER-DATA
+        disable_ticketing: "true"
+        on_duty: "false"
+        sma_service: undefined
+    image:
+      repository: europe-docker.pkg.dev/member-worldwide-utes/member-worldwide-eu/decathlon-bootcamp
+      tag: latest
+      port: 8080
+      resources:
+        limits:
+          cpu: 1
+          memory: 512Mi
+        requests:
+          cpu: 0.2
+          memory: 512Mi
+      livenessProbe:
+        initialDelaySeconds: 60
+        httpGet:
+          path: /ping
+          port: 8080
+          scheme: HTTP
+      readinessProbe:
+        initialDelaySeconds: 60
+        httpGet:
+          path: /ping
+          port: 8080
+          scheme: HTTP
+    env:
+      - name: DD_AGENT_HOST
+        valueFrom:
+          fieldRef:
+            fieldPath: status.hostIP
+      - name: DD_ENV
+        valueFrom:
+          fieldRef:
+            fieldPath: metadata.annotations['tags.datadoghq.com/env']
+      - name: DD_SERVICE
+        valueFrom:
+          fieldRef:
+            fieldPath: metadata.annotations['tags.datadoghq.com/service']
+      - name: DD_VERSION
+        valueFrom:
+          fieldRef:
+            fieldPath: metadata.annotations['tags.datadoghq.com/version']
+      - name: DD_PROFILING_ENABLED
+        value: "true"
+      - name: DD_JMS_ANALYTICS_ENABLED
+        value: "true"
+      - name: DD_JDBC_ANALYTICS_ENABLED
+        value: "true"
+      - name: DD_LOGS_INJECTION
+        value: "true"
+      - name: DD_TRACE_SAMPLE_RATE
+        value: "1"
+    ingresses:
+      enabled: true
+      ingressRoutes:
+        - url: https://decathlon-bootcamp.eph.member.decathlon.net
+          isPublic: true
+          issuer: default
+          sso: false
+    imagePullSecrets:
+      enabled: true
+    service:
+      enabled: true
+      type: ClusterIP
+      port: 8080
+      name: service
+  interval: 5m
+  dependsOn:
+    - name: traefik
+      namespace: member-system

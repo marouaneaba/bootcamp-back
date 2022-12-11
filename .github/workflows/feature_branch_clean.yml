@@ -1,0 +1,53 @@
+name: Feature Close
+on:
+  pull_request:
+    types: [closed]
+
+jobs:
+  clean-env:
+    runs-on: Linux #linux internal
+    steps:
+      - name: clean
+        uses: docker://centos
+        if: ${{ always() }}
+        continue-on-error: true
+        with:
+          args: "/bin/rm /github/workspace -rf"
+
+      - uses: actions/checkout@v2
+
+      - name: Checkout GitHub Action Repo
+        uses: actions/checkout@v2
+        with:
+          repository: dktunited/member-actions
+          ref: v1
+          token: ${{ secrets.DKTUNITED_TOKEN }}
+          path: .github/member-actions
+
+      - name: Setup variables
+        uses: ./.github/member-actions/github-action-member-setup-env
+        with:
+          kube_config_data: ${{ secrets.MEMBER_KUBE_CONFIG_EPH_DATA }}
+
+      - name: Clean ephemeral env
+        run: |
+          kubectl delete -n ${{env.ghrepo}}-${{ github.event.pull_request.number }} -f deploy --force --grace-period 0
+          kubectl delete ns ${{env.ghrepo}}-${{ github.event.pull_request.number }} || true
+
+      - name: Comment with URL
+        uses: actions/github-script@v3
+        with:
+          github-token: "${{ secrets.GITHUB_TOKEN }}"
+          script: |
+            const output = `Your environment has been cleaned. \n See you !  `;
+            github.issues.createComment({
+                issue_number: "${{ github.event.pull_request.number }}",
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                body: output
+            });
+
+      - uses: actions-ecosystem/action-remove-labels@v1
+        with:
+          labels: ephemeral
+          github_token: "${{ secrets.GITHUB_TOKEN }}"

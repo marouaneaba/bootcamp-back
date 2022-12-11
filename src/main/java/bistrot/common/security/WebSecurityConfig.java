@@ -30,7 +30,8 @@ public class WebSecurityConfig {
             "/swagger-resources",
             "/swagger-ui",
             "/swagger-ui/**",
-            "/v2/api-docs"
+            "/v2/api-docs",
+            "/ping"
     };
 
     @Bean

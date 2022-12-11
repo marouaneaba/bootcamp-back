@@ -1,0 +1,252 @@
+name: Feature
+on:
+  pull_request:
+    types: [ opened, synchronize, reopened ]
+jobs:
+  build:
+    runs-on: ubuntu-latest #linux internal
+    steps:
+      - name: clean
+        uses: docker://centos
+        if: ${{ always() }}
+        continue-on-error: true
+        with:
+          args: "/bin/rm /github/workspace -rf"
+
+      - uses: actions/checkout@v2
+
+      - name: Set up JDK 14
+        uses: actions/setup-java@v1
+        with:
+          java-version: 14
+          settings-path: ${{ github.workspace }}
+
+      - name: Checkout GitHub Action Repo
+        uses: actions/checkout@v2
+        with:
+          repository: dktunited/member-actions
+          ref: v1
+          token: ${{ secrets.DKTUNITED_TOKEN }}
+          path: .github/member-actions
+
+      - name: Cache local Maven repository
+        uses: actions/cache@v2
+        with:
+          path: ~/.m2/repository
+          key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
+          restore-keys: |
+            ${{ runner.os }}-maven-
+      - name: Build with Maven
+        run: ./mvnw -q clean install
+        continue-on-error: true
+
+      - name: Publish Test Report
+        uses: mikepenz/action-junit-report@v2
+        with:
+          fail_on_failure: "true"
+          report_paths: '**/surefire-reports/TEST-*.xml'
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v1
+
+      - name: Login to Container Registry Europe
+        uses: docker/login-action@v1
+        with:
+          registry: ${{ secrets.MEMBER_DOCKER_REGISTRY_EUROPE }}
+          username: ${{ secrets.MEMBER_DOCKER_REGISTRY_USERNAME }}
+          password: ${{ secrets.MEMBER_DOCKER_REGISTRY_PASSWORD }}
+
+      - name: Generate Sonar report
+        uses: actions/cache@v1
+        with:
+          path: ~/.sonar/cache
+          key: ${{ runner.os }}-sonar
+          restore-keys: ${{ runner.os }}-sonar
+
+      - name: Cache Maven packages
+        uses: actions/cache@v1
+        with:
+          path: ~/.m2
+          key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
+          restore-keys: ${{ runner.os }}-m2
+
+      - name: Build and analyze sonar
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHU_TOKEN }}
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        run: ./mvnw -B verify org.sonarsource.scanner.maven:sonar-maven-plugin:sonar -Dsonar.organization=dktunited -Dsonar.projectKey=decathlon-bootcamp -Dsonar.host.url=https://sonarcloud.io -Dsonar.login=ab1f66f556d9a05c9e2ab9efa427892bee749f79 -Dsonar.branch.name=${{ github.event.pull_request.head.ref }}
+
+      # TODO replace decathlon-bootcamp to ${{ env.ghrepo }}
+      - name: Build
+        uses: docker/build-push-action@v2
+        with:
+          context: .
+          platforms: linux/amd64
+          push: false
+          load: true #load from buidkit to docker only for prisma :'(
+          tags: |
+            ${{ secrets.MEMBER_DOCKER_REGISTRY_EUROPE }}/member-worldwide-utes/member-worldwide-eu/decathlon-bootcamp:EPHEMERAL-${{ github.event.pull_request.number }}
+      # TODO replace decathlon-bootcamp to ${{ env.ghrepo }}
+      - name: Push
+        uses: docker/build-push-action@v2
+        with:
+          context: .
+          platforms: linux/amd64
+          push: true
+          tags: |
+            ${{ secrets.MEMBER_DOCKER_REGISTRY_EUROPE }}/member-worldwide-utes/member-worldwide-eu/decathlon-bootcamp:EPHEMERAL-${{ github.event.pull_request.number }}
+  #  checkmarkx:
+  #    runs-on: ubuntu-latest #linux internal
+  #    #needs: [ build ]
+  #    name: execute Checkmarx Open Source Analysis on PR
+  #    steps:
+  #      - name: clean
+  #        uses: docker://centos
+  #        if: ${{ always() }}
+  #        continue-on-error: true
+  #        with:
+  #          args: "/bin/rm /github/workspace -rf"
+  #
+  #      - uses: actions/checkout@v2
+  #      - name: OSA action
+  #        uses: checkmarx-ts/checkmarx-github-action@master
+  #        with:
+  #          cxAction: AsyncOsaScan
+  #          cxServer: https://checkmarx.dktapp.cloud
+  #          cxUsername: automation
+  #          cxPassword: ${{ secrets.CX_SCAN_PASS }}
+  #          cxTeam: /CxServer/SP/Company/Users
+  #          cxExecutePackageDependency: true
+  #          cxGithubIssues: false
+  #          cxGithubToken: ${{ secrets.GITHUB_TOKEN }}
+  #          cxGithubLabels: bug
+  #          cxProject: checkmarx-test
+  #          cxIncremental: true
+  #          cxVersion: "2021.1.1"
+  #      - name: Checkmarx CxFlow Action
+  #        uses: checkmarx-ts/checkmarx-cxflow-github-action@v1.1
+  #        with:
+  #          project: checkmarx-test
+  #          team: '/CxServer/SP/Company/Users'
+  #          checkmarx_url: https://checkmarx.dktapp.cloud
+  #          checkmarx_username: automation
+  #          checkmarx_password: ${{ secrets.CX_SCAN_PASS }}
+  #          checkmarx_client_secret: "014DF517-39D1-4453-B7B3-9930C563627C"
+  #          github_token: ${{ secrets.GITHUB_TOKEN }}
+  #          scanners: sast
+  #          bug_tracker: GITHUBPULL
+  #          params: --namespace=${{ github.repository_owner }} --repo-name=${{ github.event.repository.name }} --branch=${{ github.head_ref }} --merge-id=${{ github.event.number }}
+
+  deploy:
+    runs-on: ubuntu-latest #linux internal
+    needs: [ build ] # [ build, checkmarkx ]
+    steps:
+      - name: Add ready for ephemeral label
+        uses: actions/labeler@main
+        with:
+          repo-token: "${{ secrets.GITHUB_TOKEN }}"
+          configuration-path: .github/labeler-ephemeral.yml
+
+      - name: clean
+        uses: docker://centos
+        if: ${{ always() }}
+        continue-on-error: true
+        with:
+          args: "/bin/rm /github/workspace -rf"
+
+      - uses: actions/checkout@v2
+
+      - name: Checkout GitHub Action Repo
+        uses: actions/checkout@v2
+        with:
+          repository: dktunited/member-actions
+          ref: v1
+          token: ${{ secrets.DKTUNITED_TOKEN }}
+          path: .github/member-actions
+
+      - name: Setup variables
+        uses: ./.github/member-actions/github-action-member-setup-env
+        with:
+          kube_config_data: ${{ secrets.MEMBER_KUBE_CONFIG_EPH_DATA }}
+
+      - name: Set kubernetes variables
+        run: |
+          sed -i "s/DUMMY_ADDRESS_TO_CHANGE/${{ env.ghrepo }}-${{ github.event.pull_request.number }}/g" deploy/*.yaml
+          # Choose here between helm or plain yaml
+          # Date allow us to force redeploy properly
+          date="$(date '+%Y-%m-%d %H:%M:%S')"
+          # helm
+          yq e -i ".spec.values.annotations.\"kubectl.kubernetes.io/restartedAt\" = \"${date}\"" deploy/app-helm.yaml
+          yq e -i ".spec.values.image.repository = \"${{ secrets.MEMBER_DOCKER_REGISTRY_EUROPE }}/member-worldwide-utes/member-worldwide-eu/${{ env.ghrepo }}\"" deploy/app-helm.yaml
+          yq e -i ".spec.values.image.tag = \"EPHEMERAL-${{ github.event.pull_request.number }}\"" deploy/app-helm.yaml
+          # Plain
+          # yq -i eval "select(.kind == \"Deployment\") |= .spec.template.metadata.annotations.\"kubectl.kubernetes.io/restartedAt\" = \"${date}\"" deploy/app-plain.yaml
+          # yq -i eval "select(.kind == \"Deployment\") |= .spec.template.spec.containers.0.image=\"${{ secrets.MEMBER_DOCKER_REGISTRY_EUROPE }}/member-worldwide-utes/member-worldwide-eu/${{ env.ghrepo }}:EPHEMERAL-${{ github.event.pull_request.number }}\" "  deploy/app-plain.yaml
+      - name: Deploy ephemeral
+        timeout-minutes: 25
+        env:
+          KUBE_CONFIG_DATA: ${{ secrets.MEMBER_KUBE_CONFIG_EPH_DATA }}
+        run: |
+          kubectl create namespace ${{env.ghrepo}}-${{ github.event.pull_request.number }} || true
+          kubectl annotate namespace ${{env.ghrepo}}-${{ github.event.pull_request.number }} 'field.cattle.io/projectId=c-zbph9:p-k5669' || true
+          kubectl create secret -n ${{env.ghrepo}}-${{ github.event.pull_request.number }} docker-registry member-worldwide-eu-registry --docker-server=${{ secrets.MEMBER_DOCKER_REGISTRY_EUROPE }} --docker-username=${{ secrets.MEMBER_DOCKER_REGISTRY_USERNAME }} --docker-password=${{ secrets.MEMBER_DOCKER_REGISTRY_PASSWORD }} || true
+          kubectl apply -n ${{env.ghrepo}}-${{ github.event.pull_request.number }} -f deploy
+          sleep 15
+          for i in $(kubectl get -n ${{env.ghrepo}}-${{ github.event.pull_request.number }} deploy -o name); do kubectl rollout status -n ${{env.ghrepo}}-${{ github.event.pull_request.number }} -w $i; done
+      - name: Comment with URL
+        uses: actions/github-script@v3
+        with:
+          github-token: "${{ secrets.GITHUB_TOKEN }}"
+          script: |
+            const output = `
+            #### Deployment
+            Your PR environment will be available in few seconds at: https://${{env.ghrepo}}-${{ github.event.pull_request.number }}.eph.member.decathlon.net.
+            \n
+            Have fun
+            `;
+            github.issues.createComment({
+                issue_number: ${{ github.event.pull_request.number }},
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                body: output
+            });
+#  nrt:
+#    runs-on: Linux #linux internal
+#    needs: [ deploy ]
+#    steps:
+#      - name: clean
+#        uses: docker://centos
+#        if: ${{ always() }}
+#        continue-on-error: true
+#        with:
+#          args: "/bin/rm /github/workspace -rf"
+#
+#      - uses: actions/checkout@v2
+#
+#      - name: Set up JDK 14
+#        uses: actions/setup-java@v1
+#        with:
+#          java-version: 14
+#          settings-path: ${{ github.workspace }}
+#
+#      - name: Checkout GitHub Action Repo
+#        uses: actions/checkout@v2
+#        with:
+#          repository: dktunited/member-actions
+#          ref: v1
+#          token: ${{ secrets.DKTUNITED_TOKEN }}
+#          path: .github/member-actions
+#
+#      - name: Setup variables
+#        uses: ./.github/member-actions/github-action-member-setup-env
+#
+#      - name: Integration tests
+#        run: |
+#          mvn clean test --f ./nrt/pom.xml -Pephemeral -Dapi.url='https://${{ env.ghrepo }}-${{ github.event.pull_request.number }}.eph.member.decathlon.net'
+#
+#      - name: Cucumber Report to Annotations
+#        uses: deblockt/cucumber-report-annotations-action@v1.7
+#        with:
+#          access-token: ${{ secrets.GITHUB_TOKEN }}
+#          path: "**/features.geo.geo.json"
