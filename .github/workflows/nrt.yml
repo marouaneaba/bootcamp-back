@@ -38,6 +38,19 @@ jobs:
         with:
           html_file: 'karate-summary.html'
 
+      - name: show url
+        uses: actions/github-script@v3
+        with:
+          github-token: "${{ secrets.GITHUB_TOKEN }}"
+          script: |
+            const output = `
+            #### Deployment
+            Your PR environment will be available in few seconds at: ${{ steps.html_preview.outputs.url }}
+            Your PR environment will be available in few seconds at: ${{ html_preview.html_preview.outputs.url }}
+            \n
+            Have fun
+            `;
+
       - name: Cucumber Report to Annotations
         uses: deblockt/cucumber-report-annotations-action@v1.7
         with:
